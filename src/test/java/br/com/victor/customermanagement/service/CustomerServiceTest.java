@@ -1,6 +1,7 @@
 package br.com.victor.customermanagement.service;
 
 import br.com.victor.customermanagement.dto.CustomerDTO;
+import br.com.victor.customermanagement.exceptions.ResourceNotFoundException;
 import br.com.victor.customermanagement.model.Customer;
 import br.com.victor.customermanagement.repository.ICustomerRepository;
 
@@ -45,13 +46,17 @@ class CustomerServiceTest {
     @Test
     @DisplayName("Should save customer with sucess")
     void save() {
-        when(repository.save(any(Customer.class))).thenReturn(customer);
+        when(repository.findByEmail(customerDTO.email())).thenReturn(Optional.empty());
+       when(repository.save(any(Customer.class))).thenReturn(customer);
 
-        Customer save = customerService.save(customerDTO);
+        Customer saveCustomer = customerService.save(customerDTO);
 
-        assertNotNull(save);
-        assertEquals("Victor", save.getName());
-        verify(repository, times(1)).save(customer);
+        assertNotNull(saveCustomer);
+        assertEquals(customer.getEmail(), saveCustomer.getEmail());
+        assertEquals(customer.getName(), saveCustomer.getName());
+
+        verify(repository, times(1)).findByEmail(customerDTO.email());
+        verify(repository, times(1)).save(any(Customer.class));
     }
 
     @Test
@@ -62,17 +67,18 @@ class CustomerServiceTest {
         Optional<Customer> result = customerService.findByEmail("victor@test.com");
 
         assertTrue(result.isPresent());
-        assertEquals("victor@test.com",result.get().getEmail());
+        assertEquals("victor@test.com", result.get().getEmail());
     }
 
     @Test
-    @DisplayName("Should return list is empty when not found customer")
+    @DisplayName("Should return every customers")
     void findByAll() {
-        when(repository.findAll()).thenReturn(List.of());
+        when(repository.findAll()).thenReturn(List.of(customer));
 
         List<Customer> byAll = customerService.findByAll();
 
-        assertTrue(byAll.isEmpty());
+        assertFalse(byAll.isEmpty());
+        assertEquals(1, byAll.size());
     }
 
     @Test
@@ -81,12 +87,12 @@ class CustomerServiceTest {
         Long id = 99L;
         when(repository.findById(id)).thenReturn(Optional.empty());
 
-        RuntimeException runtimeException = assertThrows(RuntimeException.class, () -> {
+        ResourceNotFoundException resourceNotFoundException = assertThrows(ResourceNotFoundException.class, () -> {
             customerService.updateCustomer(id, customerDTO);
         });
 
-        assertTrue(runtimeException.getMessage().contains("Customer not found"));
-        verify(repository,never()).save(any());
+        assertTrue(resourceNotFoundException.getMessage().contains("Customer not found"));
+        verify(repository, never()).save(any());
     }
 
     @Test

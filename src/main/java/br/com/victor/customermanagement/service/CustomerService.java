@@ -21,6 +21,9 @@ public class CustomerService {
 
     @Transactional
     public Customer save(CustomerDTO customerDto) {
+        if(customerRepository.findByEmail(customerDto.email()).isPresent()) {
+            throw new RuntimeException("E-mail already registered");
+        }
         Customer customer = new Customer();
         customer.setName(customerDto.name());
         customer.setEmail(customerDto.email());

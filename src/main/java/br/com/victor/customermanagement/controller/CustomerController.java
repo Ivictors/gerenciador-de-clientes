@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/customers")
@@ -22,9 +23,8 @@ public class CustomerController {
         this.customerService = customerService;
     }
 
-    @PostMapping("/save")
+    @PostMapping
     public ResponseEntity<Customer> save(@RequestBody @Valid CustomerDTO customerDto) {
-        customerService.save(customerDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(customerService.save(customerDto));
     }
 
@@ -35,7 +35,7 @@ public class CustomerController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/show-all")
+    @GetMapping
     public ResponseEntity<List<Customer>> findByAll() {
         List<Customer> customers = customerService.findByAll();
 
@@ -43,6 +43,16 @@ public class CustomerController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(customers);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Customer> updateCustomer(@PathVariable Long id, @Valid @RequestBody CustomerDTO customerDto) {
+        try {
+            Customer customer = customerService.updateCustomer(id, customerDto);
+            return ResponseEntity.ok(customer);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{id}")

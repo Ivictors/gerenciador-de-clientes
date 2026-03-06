@@ -37,6 +37,17 @@ public class CustomerService {
     }
 
     @Transactional
+    public Customer updateCustomer(Long id, CustomerDTO customerDto){
+       return customerRepository.findById(id).map(customerExists -> {
+            customerExists.setName(customerDto.name());
+            customerExists.setEmail(customerDto.email());
+            customerExists.setAge(customerDto.age());
+
+            return customerRepository.save(customerExists);
+    }).orElseThrow(() -> new RuntimeException("Customer not found by id: " + id));
+    }
+
+    @Transactional
     public void deleteById(Long id) {
         if (!customerRepository.existsById(id)) {
             throw new RuntimeException("Customer not found with ID: " + id);

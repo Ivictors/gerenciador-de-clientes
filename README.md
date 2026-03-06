@@ -72,7 +72,7 @@ Siga os passos abaixo para baixar e rodar a aplicação na sua máquina.
 
 - **Git** instalado.
 - **Java Development Kit (JDK) 17** ou superior.
-- **Maven** instalado (opcional, o wrapper do Maven geralmente vem junto com o projeto).
+- **Maven** instalado (opcional, o wrapper do Maven geralmente vem junto com o projeto, todavia é indicado).
 
 ### Passos via CLI (Command Line Interface)
 

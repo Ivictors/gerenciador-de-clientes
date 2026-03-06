@@ -1,6 +1,7 @@
 package br.com.victor.customermanagement.service;
 
 import br.com.victor.customermanagement.dto.CustomerDTO;
+import br.com.victor.customermanagement.exceptions.ResourceNotFoundException;
 import br.com.victor.customermanagement.model.Customer;
 import br.com.victor.customermanagement.repository.ICustomerRepository;
 
@@ -47,14 +48,14 @@ public class CustomerService {
             customerExists.setAge(customerDto.age());
 
             return customerRepository.save(customerExists);
-    }).orElseThrow(() -> new RuntimeException("Customer not found by id: " + id));
+    }).orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + id));
     }
 
     @Transactional
     public void deleteById(Long id) {
-        if (!customerRepository.existsById(id)) {
-            throw new RuntimeException("Customer not found with ID: " + id);
-        }
+       if (!customerRepository.existsById(id)){
+           new ResourceNotFoundException("Customer not found with ID: " + id);
+       }
         customerRepository.deleteById(id);
     }
 }

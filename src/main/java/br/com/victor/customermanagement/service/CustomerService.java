@@ -53,9 +53,9 @@ public class CustomerService {
 
     @Transactional
     public void deleteById(Long id) {
-       if (!customerRepository.existsById(id)){
-           new ResourceNotFoundException("Customer not found with ID: " + id);
-       }
+        if (!customerRepository.existsById(id)){
+            throw new ResourceNotFoundException("Customer not found with ID: " + id);
+        }
         customerRepository.deleteById(id);
     }
 }

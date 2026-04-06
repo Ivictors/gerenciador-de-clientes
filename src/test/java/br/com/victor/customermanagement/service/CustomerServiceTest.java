@@ -1,6 +1,7 @@
-package br.com.victor.customermanagement.service;
+﻿package br.com.victor.customermanagement.service;
 
 import br.com.victor.customermanagement.dto.CustomerDTO;
+import br.com.victor.customermanagement.exceptions.DuplicateEmailException;
 import br.com.victor.customermanagement.exceptions.ResourceNotFoundException;
 import br.com.victor.customermanagement.model.Customer;
 import br.com.victor.customermanagement.repository.ICustomerRepository;
@@ -36,7 +37,7 @@ class CustomerServiceTest {
     @BeforeEach
     void setUp() {
         customer = new Customer();
-        customer.setId_Customer(1L);
+        customer.setId(1L);
         customer.setName("Victor");
         customer.setEmail("victor@test.com");
         customer.setAge(25);
@@ -45,10 +46,10 @@ class CustomerServiceTest {
     }
 
     @Test
-    @DisplayName("Should save customer with sucess")
+    @DisplayName("Should save customer with success")
     void save() {
         when(repository.findByEmail(customerDTO.email())).thenReturn(Optional.empty());
-       when(repository.save(any(Customer.class))).thenReturn(customer);
+        when(repository.save(any(Customer.class))).thenReturn(customer);
 
         Customer saveCustomer = customerService.save(customerDTO);
 
@@ -83,7 +84,7 @@ class CustomerServiceTest {
     }
 
     @Test
-    @DisplayName("Should handler exception if not found customer")
+    @DisplayName("Should handle exception if not found customer")
     void updateCustomer() {
         Long id = 99L;
         when(repository.findById(id)).thenReturn(Optional.empty());
@@ -97,7 +98,7 @@ class CustomerServiceTest {
     }
 
     @Test
-    @DisplayName("Should deleted a customer with sucess")
+    @DisplayName("Should delete a customer with success")
     void deleteById() {
         Long id = 1L;
         when(repository.existsById(id)).thenReturn(true);
@@ -112,7 +113,7 @@ class CustomerServiceTest {
     void save_EmailAlreadyExists() {
         when(repository.findByEmail(customerDTO.email())).thenReturn(Optional.of(customer));
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        DuplicateEmailException exception = assertThrows(DuplicateEmailException.class, () -> {
             customerService.save(customerDTO);
         });
 
@@ -127,6 +128,7 @@ class CustomerServiceTest {
         CustomerDTO updateDTO = new CustomerDTO("Victor", "Victor@email.com", 30);
 
         when(repository.findById(id)).thenReturn(Optional.of(customer));
+        when(repository.findByEmail("Victor@email.com")).thenReturn(Optional.empty());
         when(repository.save(any(Customer.class))).thenAnswer(invocation -> {
             Customer updated = invocation.getArgument(0);
             return updated;
@@ -141,6 +143,27 @@ class CustomerServiceTest {
 
         verify(repository).findById(id);
         verify(repository).save(any(Customer.class));
+    }
+
+    @Test
+    @DisplayName("Should throw exception when updating with duplicate email")
+    void updateCustomer_DuplicateEmail() {
+        Long id = 1L;
+        CustomerDTO updateDTO = new CustomerDTO("Victor", "duplicate@email.com", 30);
+
+        Customer existingCustomer = new Customer();
+        existingCustomer.setId(2L);
+        existingCustomer.setEmail("duplicate@email.com");
+
+        when(repository.findById(id)).thenReturn(Optional.of(customer));
+        when(repository.findByEmail("duplicate@email.com")).thenReturn(Optional.of(existingCustomer));
+
+        DuplicateEmailException exception = assertThrows(DuplicateEmailException.class, () -> {
+            customerService.updateCustomer(id, updateDTO);
+        });
+
+        assertThat(exception.getMessage()).isEqualTo("E-mail already registered");
+        verify(repository, never()).save(any());
     }
 
     @Test

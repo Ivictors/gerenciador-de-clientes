@@ -9,16 +9,16 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
-public class CustommerExceptionHandler {
+public class CustomerExceptionHandler {
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ErrorResponseDTO> handleRuntimeException(RuntimeException ex) {
+    @ExceptionHandler(DuplicateEmailException.class)
+    public ResponseEntity<ErrorResponseDTO> handleDuplicateEmail(DuplicateEmailException ex) {
         ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
-                HttpStatus.NOT_FOUND.value(),
+                HttpStatus.CONFLICT.value(),
                 ex.getMessage(),
                 System.currentTimeMillis()
         );
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponseDTO);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponseDTO);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

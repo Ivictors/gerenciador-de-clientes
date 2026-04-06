@@ -1,18 +1,20 @@
-package br.com.victor.customermanagement.model;
+﻿package br.com.victor.customermanagement.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "customer")
 public class Customer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_Customer;
+    private Long id;
 
     @Column(name = "customer_name", nullable = false)
     private String name;
@@ -22,5 +24,4 @@ public class Customer {
 
     @Column(name = "customer_age", nullable = false)
     private Integer age;
-    }
-
+}

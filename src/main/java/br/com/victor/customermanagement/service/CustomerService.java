@@ -1,6 +1,7 @@
-package br.com.victor.customermanagement.service;
+﻿package br.com.victor.customermanagement.service;
 
 import br.com.victor.customermanagement.dto.CustomerDTO;
+import br.com.victor.customermanagement.exceptions.DuplicateEmailException;
 import br.com.victor.customermanagement.exceptions.ResourceNotFoundException;
 import br.com.victor.customermanagement.model.Customer;
 import br.com.victor.customermanagement.repository.ICustomerRepository;
@@ -23,7 +24,7 @@ public class CustomerService {
     @Transactional
     public Customer save(CustomerDTO customerDto) {
         if(customerRepository.findByEmail(customerDto.email()).isPresent()) {
-            throw new RuntimeException("E-mail already registered");
+            throw new DuplicateEmailException("E-mail already registered");
         }
         Customer customer = new Customer();
         customer.setName(customerDto.name());
@@ -42,13 +43,17 @@ public class CustomerService {
 
     @Transactional
     public Customer updateCustomer(Long id, CustomerDTO customerDto){
-       return customerRepository.findById(id).map(customerExists -> {
+        return customerRepository.findById(id).map(customerExists -> {
+            if (!customerExists.getEmail().equals(customerDto.email()) &&
+                customerRepository.findByEmail(customerDto.email()).isPresent()) {
+                throw new DuplicateEmailException("E-mail already registered");
+            }
             customerExists.setName(customerDto.name());
             customerExists.setEmail(customerDto.email());
             customerExists.setAge(customerDto.age());
 
             return customerRepository.save(customerExists);
-    }).orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + id));
+        }).orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + id));
     }
 
     @Transactional
